@@ -32,10 +32,16 @@
   const dbURLField = document.querySelector('.app-watcher__db')
 
   /**
+   * Reference to the table HTML Element.
+   * @type {HTML Element}
+   */
+  const table = document.querySelector('.app-watcher__table')
+
+  /**
    * Reference to the HTML Element which will display any new updates.
    * @type {HTML Element}
    */
-  const table = document.querySelector('.app-watcher__table-updates')
+  const tableBody = document.querySelector('.app-watcher__table-updates')
 
   // Add a listener to the submit button so that when it is clicked it starts
   // the checking.
@@ -55,6 +61,9 @@
    * @return {Promise}  Resolved on successful check, rejected otherwise.
    */
   function run () {
+    // Hide table.
+    toggleVisibility(table, false)
+
     // Get the DB URL entered.
     const dbURL = dbURLField.value
     
@@ -77,7 +86,7 @@
       return Promise.all(promises)
     }).then(repos => {
       // Clear table
-      table.innerHTML = ''
+      tableBody.innerHTML = ''
 
       // Finally if releases version does not match, display the update in the
       // DOM.
@@ -138,7 +147,8 @@
     row.appendChild(repoVersion)
     row.appendChild(repoLatest)
 
-    table.appendChild(row)
+    tableBody.appendChild(row)
+    toggleVisibility(table, true)
   }
 
   /**
@@ -181,8 +191,17 @@
    * @param  {String} message  Error message to be displayed
    */
   function displayError (message) {
-    if (message.length === 0) return errorDOM.classList.add('app-watcher--hide')
-    errorDOM.classList.remove('app-watcher--hide')
+    toggleVisibility(errorDOM, message.length > 0)
     errorDOM.innerHTML = message
+  }
+
+  /**
+   * Function used to toggle the visibility of an HTML Element.
+   * @param  {HTML Element} elem  HTML Element to be shown/hidden.
+   * @param  {Boolean}      show  Indicates whether to show or hide the element.
+   */
+  function toggleVisibility (elem, show) {
+    if (show === true) return elem.classList.remove('app-watcher--hide')
+    elem.classList.add('app-watcher--hide')
   }
 }())

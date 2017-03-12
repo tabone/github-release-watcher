@@ -4,6 +4,10 @@
   font-size: 16px;
 }
 
+.app-watcher {
+  width: 300px;
+}
+
 .app-watcher__db {
   padding: 6px 9px;
   border-radius: 3px;
