@@ -61,7 +61,7 @@
   // Check whether the user has a cached DB URL and if so, use it.
   chrome.storage.sync.get(STORE_DB_URL, info => {
     const dbURL = info[STORE_DB_URL]
-    if (dbURL === undefined) return
+    if (dbURL === undefined) return toggleVisibility(announceDOM, false)
     dbURLField.value = dbURL
     run()
   })
