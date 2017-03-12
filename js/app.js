@@ -2,16 +2,22 @@
 
 ;(function () {
   /**
-   * Prefix for all storage keys related to this extension.
+   * The application name.
    * @type {String}
    */
-  const STORE_PREFIX = 'GITHUB_RELEASE_WATCHER'
+  const APP_NAME = 'GITHUB_RELEASE_WATCHER'
 
   /**
    * Storage key to cache DB URL.
    * @type {String}
    */
-  const STORE_DB_URL = `${STORE_PREFIX}-DB_URL`
+  const STORE_DB_URL = `${APP_NAME}-DB_URL`
+
+  /**
+   * Reference to the HTML Element used to display error messages
+   * @type {HTML Element}
+   */
+  const errorDOM = document.querySelector('.app-watcher__error')
 
   /**
    * Referene to the button used to submit the DB URL.
@@ -75,6 +81,11 @@
       repos.forEach(({ entry, release }) => {
         if (entry.version !== release.name) addUpdate({ entry, release})
       })
+
+      displayError('')
+    }).catch(err => {
+      if (err.entity === APP_NAME) return displayError(err.message)
+      displayError('An error had occured.')
     })
   }
 
@@ -139,7 +150,15 @@
       const xhr = new XMLHttpRequest()
 
       xhr.open('GET', url)
-      xhr.addEventListener('load', function () { resolve(this) })
+      xhr.addEventListener('load', function () {
+        if (this.status !== 200) {
+          return reject({
+            entity: APP_NAME,
+            message: 'DB URL not reachable'
+          })
+        }
+        resolve(this)
+      })
       xhr.addEventListener('abort', function () { reject(this) })
       xhr.addEventListener('error', function () { reject(this) })
 
@@ -153,5 +172,15 @@
    */
   function openURL (url) {
     chrome.tabs.create({ active: true, url: url })
+  }
+
+  /**
+   * Function used to display an error message.
+   * @param  {String} message  Error message to be displayed
+   */
+  function displayError (message) {
+    if (message.length === 0) return errorDOM.classList.add('app-watcher--hide')
+    errorDOM.classList.remove('app-watcher--hide')
+    errorDOM.innerHTML = message
   }
 }())
