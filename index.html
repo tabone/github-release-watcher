@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Github Release Watcher</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+  </head>
+  <body>
+    <main class="app-watcher">
+      <input type="text" placeholder="Enter DB URL" class="app-watcher__db app-watcher--space" />
+      <button class="app-watcher__submit-btn app-watcher--space">Check</button>
+      <table class="app-watcher__table">
+        <thead>
+          <tr>
+            <th>Repo</th>
+            <th>Your's</th>
+            <th>Latest</th>
+          </tr>
+        </thead>
+        <tbody class="app-watcher__table-updates">
+        </tbody>
+      </table>
+    </main>
+    <script src="js/app.js"></script>
+  </body>
+</html>
