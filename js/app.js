@@ -76,6 +76,9 @@
 
       return Promise.all(promises)
     }).then(repos => {
+      // Clear table
+      table.innerHTML = ''
+
       // Finally if releases version does not match, display the update in the
       // DOM.
       repos.forEach(({ entry, release }) => {
@@ -135,7 +138,6 @@
     row.appendChild(repoVersion)
     row.appendChild(repoLatest)
 
-    table.innerHTML = ''
     table.appendChild(row)
   }
 
