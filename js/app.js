@@ -14,10 +14,10 @@
   const STORE_DB_URL = `${APP_NAME}-DB_URL`
 
   /**
-   * Reference to the HTML Element used to display error messages
+   * Reference to the HTML Element used to display announcements.
    * @type {HTML Element}
    */
-  const errorDOM = document.querySelector('.app-watcher__error')
+  const announceDOM = document.querySelector('.app-watcher__announce')
 
   /**
    * Referene to the button used to submit the DB URL.
@@ -43,9 +43,20 @@
    */
   const tableBody = document.querySelector('.app-watcher__table-updates')
 
+  /**
+   * Contains info about the different announcement types.
+   * @type {Object}
+   */
+  const announceTypes = {
+    INFO: 0,
+    ERROR: 1
+  }
+
   // Add a listener to the submit button so that when it is clicked it starts
   // the checking.
   btn.addEventListener('click', run)
+
+  announce('Checking for cached DB URL')
 
   // Check whether the user has a cached DB URL and if so, use it.
   chrome.storage.sync.get(STORE_DB_URL, info => {
@@ -70,14 +81,20 @@
     // If no DB URL is provided, do nothing.
     if (dbURL.length === 0) return
 
+    announce('Caching DB URL...')
+
     // Cache DB URL.
     chrome.storage.sync.set({ [STORE_DB_URL]: dbURL })
 
+    announce('Retrieving JSON DB File...')
     // Retrieve DB JSON file.
     return doRequest(dbURLField.value).then(xhr => {
+      announce('JSON DB File retrieved!')
+
       const entries = JSON.parse(xhr.responseText)
       const promises = []
 
+      announce('Retrieving Repos Info...')
       // Retrieve the latest release for each repo.
       entries.forEach(entry => {
         promises.push(retrieveLatestRelease(entry))
@@ -85,6 +102,8 @@
 
       return Promise.all(promises)
     }).then(repos => {
+      announce('Checking Repos...')
+
       // Clear table
       tableBody.innerHTML = ''
 
@@ -94,10 +113,13 @@
         if (entry.version !== release.name) addUpdate({ entry, release})
       })
 
-      displayError('')
+      announce(table.classList.contains('app-watcher--hide')
+        ? 'Repos are up-to-date!'
+        : 'Done :)')
     }).catch(err => {
-      if (err.entity === APP_NAME) return displayError(err.message)
-      displayError('An error had occured.')
+      const annouceError = announceTypes.ERROR
+      if (err.entity === APP_NAME) return announce(err.message, annouceError)
+      announce('An error had occured.', annouceError)
     })
   }
 
@@ -187,12 +209,28 @@
   }
 
   /**
-   * Function used to display an error message.
-   * @param  {String} message  Error message to be displayed
+   * Function used to announce something to the user.
+   * @param  {String} message  Message to be displayed
+   * @param  {String} type     Announcement type.
    */
-  function displayError (message) {
-    toggleVisibility(errorDOM, message.length > 0)
-    errorDOM.innerHTML = message
+  function announce (message, type) {
+    switch (type) {
+      case announceTypes.ERROR: {
+        announceDOM.classList.remove('app-watcher__announce--info')
+        announceDOM.classList.add('app-watcher__announce--error')
+        break
+      }
+      default: {
+        announceDOM.classList.remove('app-watcher__announce--error')
+        announceDOM.classList.add('app-watcher__announce--info')
+      }
+    }
+
+    // Set the message.
+    announceDOM.innerHTML = message
+
+    // Display announce HTML Element.
+    toggleVisibility(announceDOM, true)
   }
 
   /**

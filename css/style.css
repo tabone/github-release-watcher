@@ -29,11 +29,18 @@
   width: 100%;
 }
 
-.app-watcher__error {
-  background-color: #d6a1a1;
+.app-watcher__announce {
   color: #fff;
   padding: 6px 9px;
   border-radius: 3px;
+}
+
+.app-watcher__announce--error {
+  background-color: #d6a1a1;
+}
+
+.app-watcher__announce--info {
+  background-color: #89c785;
 }
 
 .app-watcher--space {
