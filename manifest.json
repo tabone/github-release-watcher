@@ -5,7 +5,12 @@
   "description": "Github release watcher",
   "author": "Luca Tabone",
   "permissions": [ "storage" ],
+  "icons": {
+    "48": "icons/48.jpg",
+    "128": "icons/128.jpg"
+  },
   "browser_action": {
+    "default_icon": "icon.png",
     "default_popup": "index.html"
   }
 }
