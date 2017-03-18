@@ -88,7 +88,7 @@
 
     announce('Retrieving JSON DB File...')
     // Retrieve DB JSON file.
-    return doRequest(dbURLField.value).then(xhr => {
+    return retrieveDBFile(dbURLField.value).then(xhr => {
       announce('JSON DB File retrieved!')
 
       const entries = JSON.parse(xhr.responseText)
@@ -120,6 +120,23 @@
       const annouceError = announceTypes.ERROR
       if (err.entity === APP_NAME) return announce(err.message, annouceError)
       announce('An error had occured.', annouceError)
+    })
+  }
+
+  /**
+   * Function used to retrieve the DB JSON File.
+   * @param  {String} url The URL of the DB JSON File.
+   * @return {Promise}  Resolved on retrieval of DB JSON File, rejected
+   *                    otherwise.
+   */
+  function retrieveDBFile (url) {
+    return doRequest(url).catch(xhr => {
+      if (xhr.status === 404) {
+        return Promise.reject({
+          entity: APP_NAME,
+          message: 'DB URL unreachable'
+        })
+      }
     })
   }
 
@@ -185,12 +202,7 @@
 
       xhr.open('GET', url)
       xhr.addEventListener('load', function () {
-        if (this.status !== 200) {
-          return reject({
-            entity: APP_NAME,
-            message: 'DB URL not reachable'
-          })
-        }
+        if (this.status !== 200) return reject(this)
         resolve(this)
       })
       xhr.addEventListener('abort', function () { reject(this) })
