@@ -95,6 +95,15 @@
       const promises = []
 
       announce('Retrieving Repos Info...')
+
+      // Make sure that DB File structure is valid
+      if (typeof entries.forEach !== 'function') {
+        return Promise.reject({
+          entity: APP_NAME,
+          message: 'Invalid DB File structure'
+        })
+      }
+
       // Retrieve the latest release for each repo.
       entries.forEach(entry => {
         promises.push(retrieveLatestRelease(entry))
