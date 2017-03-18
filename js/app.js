@@ -119,7 +119,7 @@
       // Finally if releases version does not match, display the update in the
       // DOM.
       repos.forEach(({ entry, release }) => {
-        if (entry.version !== release.name) addUpdate({ entry, release})
+        if (entry.version !== release['tag_name']) addUpdate({ entry, release})
       })
 
       announce(table.classList.contains('app-watcher--hide')
@@ -183,7 +183,7 @@
     repoVersion.innerHTML = entry.version
 
     repoLink.href = "javascript:;"
-    repoLink.innerHTML = release.name
+    repoLink.innerHTML = release['tag_name']
     repoLink.title = `${repoName.innerHTML} release page`
     repoLink.addEventListener('click', function () {
       openURL(release['html_url'])
