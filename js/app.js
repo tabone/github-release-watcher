@@ -159,11 +159,15 @@
   function retrieveLatestRelease (entry) {
     const url = `https://api.github.com/repos/${entry.user}/` +
       `${entry.repository}/releases/latest`
+
+    const payload = { entry }
+
     return doRequest(url).then(xhr => {
-      return {
-        entry: entry,
-        release: JSON.parse(xhr.responseText)
-      }
+      payload.release = JSON.parse(xhr.responseText)
+      return payload
+    }).catch(xhr => {
+      payload.release = { 'tag_name': 'N/A' }
+      return payload
     })
   }
 
