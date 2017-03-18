@@ -88,13 +88,22 @@
 
     announce('Retrieving JSON DB File...')
     // Retrieve DB JSON file.
-    return doRequest(dbURLField.value).then(xhr => {
+    return retrieveDBFile(dbURLField.value).then(xhr => {
       announce('JSON DB File retrieved!')
 
       const entries = JSON.parse(xhr.responseText)
       const promises = []
 
       announce('Retrieving Repos Info...')
+
+      // Make sure that DB File structure is valid
+      if (typeof entries.forEach !== 'function') {
+        return Promise.reject({
+          entity: APP_NAME,
+          message: 'Invalid DB File structure'
+        })
+      }
+
       // Retrieve the latest release for each repo.
       entries.forEach(entry => {
         promises.push(retrieveLatestRelease(entry))
@@ -110,7 +119,7 @@
       // Finally if releases version does not match, display the update in the
       // DOM.
       repos.forEach(({ entry, release }) => {
-        if (entry.version !== release.name) addUpdate({ entry, release})
+        if (entry.version !== release['tag_name']) addUpdate({ entry, release})
       })
 
       announce(table.classList.contains('app-watcher--hide')
@@ -124,6 +133,23 @@
   }
 
   /**
+   * Function used to retrieve the DB JSON File.
+   * @param  {String} url The URL of the DB JSON File.
+   * @return {Promise}  Resolved on retrieval of DB JSON File, rejected
+   *                    otherwise.
+   */
+  function retrieveDBFile (url) {
+    return doRequest(url).catch(xhr => {
+      if (xhr.status === 404) {
+        return Promise.reject({
+          entity: APP_NAME,
+          message: 'DB URL unreachable'
+        })
+      }
+    })
+  }
+
+  /**
    * Function used to retrieve the latest release info of a repo.
    * @param  {String} entry.user        The repo's owner name.
    * @param  {String} entry.repository  The repo's name.
@@ -133,11 +159,15 @@
   function retrieveLatestRelease (entry) {
     const url = `https://api.github.com/repos/${entry.user}/` +
       `${entry.repository}/releases/latest`
+
+    const payload = { entry }
+
     return doRequest(url).then(xhr => {
-      return {
-        entry: entry,
-        release: JSON.parse(xhr.responseText)
-      }
+      payload.release = JSON.parse(xhr.responseText)
+      return payload
+    }).catch(xhr => {
+      payload.release = { 'tag_name': 'N/A' }
+      return payload
     })
   }
 
@@ -157,7 +187,7 @@
     repoVersion.innerHTML = entry.version
 
     repoLink.href = "javascript:;"
-    repoLink.innerHTML = release.name
+    repoLink.innerHTML = release['tag_name']
     repoLink.title = `${repoName.innerHTML} release page`
     repoLink.addEventListener('click', function () {
       openURL(release['html_url'])
@@ -185,12 +215,7 @@
 
       xhr.open('GET', url)
       xhr.addEventListener('load', function () {
-        if (this.status !== 200) {
-          return reject({
-            entity: APP_NAME,
-            message: 'DB URL not reachable'
-          })
-        }
+        if (this.status !== 200) return reject(this)
         resolve(this)
       })
       xhr.addEventListener('abort', function () { reject(this) })
